@@ -1,4 +1,7 @@
+import { readFileSync } from 'fs';
+import * as path from 'path';
 import { Locator, Page } from '@playwright/test';
+import process from 'process';
 
 export class GeneratePage {
     readonly page: Page;
@@ -22,6 +25,24 @@ export class GeneratePage {
         this.currentWorkProjectLinkInputField = page.locator('#currentWork-link');
         this.collaborationInputField = page.locator('#collaborateOn');
         this.collaborationLinkInputField = page.locator('#collaborateOn-link');
+    }
+
+    async goTo(url: string) {
+        await this.page.goto(url);
+    }
+
+    selectRandomSkills(): string {
+        const dataPath = path.resolve(process.cwd(), 'data/sample-user-data.json');
+        const rawData = readFileSync(dataPath, 'utf8');
+        const parsedData = JSON.parse(rawData) as { skillTitles?: string[] };
+        const skillTitles = parsedData.skillTitles ?? [];
+
+        if (skillTitles.length === 0) {
+            throw new Error('No skill titles found in the provided sample data');
+        }
+
+        const randomIndex = Math.floor(Math.random() * skillTitles.length);
+        return skillTitles[randomIndex];
     }
 
     getSkillCheckboxesInSection(sectionTitle: string): Locator {
@@ -61,8 +82,8 @@ export class GeneratePage {
         return selectedIds;
     }
 
-    async goTo(url: string) {
-        await this.page.goto(url);
+    async fillSocial(platform: string, value: string) {
+        await this.page.locator(`#${platform}`).fill(value);
     }
 
     async clickGenerateButton() {
