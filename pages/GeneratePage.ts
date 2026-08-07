@@ -13,6 +13,8 @@ export class GeneratePage {
     readonly collaborationInputField: Locator;
     readonly collaborationLinkInputField: Locator;
     readonly topSkillsCheckbox: Locator;
+    readonly topSkillsEditButton: Locator;
+    readonly topSkillsTitleColourButton: Locator;
     readonly generateREADMEButton: Locator;
     readonly markdownBox: Locator;
 
@@ -28,6 +30,8 @@ export class GeneratePage {
         this.collaborationInputField = page.locator('#collaborateOn');
         this.collaborationLinkInputField = page.locator('#collaborateOn-link');
         this.topSkillsCheckbox = page.locator('#top-languages');
+        this.topSkillsEditButton = page.locator('#top-languages-open-btn');
+        this.topSkillsTitleColourButton = page.locator('#top-lang-title-color');
         this.generateREADMEButton = page.getByRole('button', { name: 'Generate README' });
         this.markdownBox = page.locator('#markdown-box');
     }
@@ -50,12 +54,12 @@ export class GeneratePage {
         await this.page.locator(`#${platform}`).fill(value);
     }
 
-    async clickGenerateButton() {
-        await this.generateButton.click();
+    async changeColour(colour: string, targetField: Locator) {
+        await targetField.fill(colour);
     }
 
-    async getGeneratedText(): Promise<string | null> {
-        return await this.generatedText.textContent();
+    async checkMarkdownBox(skill: string) {
+
     }
 
 }
