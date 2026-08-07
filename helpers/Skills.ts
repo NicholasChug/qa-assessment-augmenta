@@ -4,4 +4,5 @@ export enum Skill {
     VueJS = "vuejs",
     Angular = "angular",
     AWS = "aws",
+    Azure = "azure",
 }
