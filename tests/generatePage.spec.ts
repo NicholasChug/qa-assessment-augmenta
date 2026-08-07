@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { GeneratePage } from '../pages/GeneratePage';
 
-test('Generate text', async ({ page }) => {
+test('Navigate to webpage and fill select input fields', async ({ page }) => {
     const generatePage = new GeneratePage(page);
 
     // Assert that webpage loads correctly and has the expected title
@@ -19,18 +19,20 @@ test('Generate text', async ({ page }) => {
     await generatePage.collaborationInputField.fill('Collaboration Project');
     await generatePage.collaborationLinkInputField.fill('https://github.com/collaboration-project');
 
-    const selectedIds = await generatePage.selectRandomCheckboxes('Programming Languages', 2);
+    // Select random skills from Skill list
+    const selectedSkill = await generatePage.selectRandomSkills();
+    expect(selectedSkill).toBeDefined();
+    expect(typeof selectedSkill).toBe('string');
+
+    // Select two random skills from previously selected skill section and verify that they are checked
+    const selectedIds = await generatePage.selectRandomCheckboxes(selectedSkill, 2);
     expect(selectedIds).toHaveLength(2);
 
     for (const id of selectedIds) {
         await expect(page.locator(`#${id}`)).toBeChecked();
     }
 
-    // Click the generate button
-    // await generatePage.clickGenerateButton();
-
-    // Expect the generated text to contain the title and subtitle
-    // const generatedText = await generatePage.getGeneratedText();
-    // expect(generatedText).toContain('My Title');
-    // expect(generatedText).toContain('My Subtitle');
+    // Fill social media input fields
+    await generatePage.fillSocial('github', 'NicholasChug');
+    await generatePage.fillSocial('twitter', '@johndoe');
 });
