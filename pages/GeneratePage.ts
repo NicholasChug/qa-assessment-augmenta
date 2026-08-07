@@ -1,7 +1,6 @@
-import { readFileSync } from 'fs';
-import * as path from 'path';
 import { Locator, Page } from '@playwright/test';
-import process from 'process';
+import { SocialPlatform } from '../helpers/Social';
+import { Skill } from '../helpers/Skills';
 
 export class GeneratePage {
     readonly page: Page;
@@ -13,6 +12,9 @@ export class GeneratePage {
     readonly currentWorkProjectLinkInputField: Locator;
     readonly collaborationInputField: Locator;
     readonly collaborationLinkInputField: Locator;
+    readonly topSkillsCheckbox: Locator;
+    readonly generateREADMEButton: Locator;
+    readonly markdownBox: Locator;
 
 
     constructor(page: Page) {
@@ -25,64 +27,26 @@ export class GeneratePage {
         this.currentWorkProjectLinkInputField = page.locator('#currentWork-link');
         this.collaborationInputField = page.locator('#collaborateOn');
         this.collaborationLinkInputField = page.locator('#collaborateOn-link');
+        this.topSkillsCheckbox = page.locator('#top-languages');
+        this.generateREADMEButton = page.getByRole('button', { name: 'Generate README' });
+        this.markdownBox = page.locator('#markdown-box');
     }
 
     async goTo(url: string) {
         await this.page.goto(url);
     }
 
-    selectRandomSkills(): string {
-        const dataPath = path.resolve(process.cwd(), 'data/sample-user-data.json');
-        const rawData = readFileSync(dataPath, 'utf8');
-        const parsedData = JSON.parse(rawData) as { skillTitles?: string[] };
-        const skillTitles = parsedData.skillTitles ?? [];
-
-        if (skillTitles.length === 0) {
-            throw new Error('No skill titles found in the provided sample data');
-        }
-
-        const randomIndex = Math.floor(Math.random() * skillTitles.length);
-        return skillTitles[randomIndex];
+    async selectSkill(skill: Skill) {
+        await this.page.locator(`#${skill}`).check();
     }
 
-    getSkillCheckboxesInSection(sectionTitle: string): Locator {
-        const section = this.page.locator('div.divide-y.divide-gray-500').filter({ hasText: sectionTitle });
-        return section.locator('input[type="checkbox"]');
+    async selectSkills(skills: Skill[]) {
+        for (const skill of skills) {
+            await this.selectSkill(skill);
+        }
     }
 
-    async selectRandomCheckboxes(sectionTitle: string, count: number = 2): Promise<string[]> {
-        const checkboxes = this.getSkillCheckboxesInSection(sectionTitle);
-        const total = await checkboxes.count();
-
-        if (total === 0) {
-            throw new Error(`No checkboxes found for section: ${sectionTitle}`);
-        }
-
-        const amount = Math.min(count, total);
-        const selectedIndexes = new Set<number>();
-
-        while (selectedIndexes.size < amount) {
-            selectedIndexes.add(Math.floor(Math.random() * total));
-        }
-
-        const selectedIds: string[] = [];
-
-        for (const index of selectedIndexes) {
-            const checkbox = checkboxes.nth(index);
-            const id = await checkbox.getAttribute('id');
-
-            if (!id) {
-                continue;
-            }
-
-            await this.page.locator(`label[for="${id}"]`).click();
-            selectedIds.push(id);
-        }
-
-        return selectedIds;
-    }
-
-    async fillSocial(platform: string, value: string) {
+    async fillSocial(platform: SocialPlatform, value: string) {
         await this.page.locator(`#${platform}`).fill(value);
     }
 

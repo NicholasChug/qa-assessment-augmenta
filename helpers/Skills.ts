@@ -1,0 +1,9 @@
+export const Skill {
+    Javascript = "javascript",
+    Python = "python",
+    VueJS = "vuejs",
+    Angular = "angular",
+    AWS = "aws",
+    Azure = "azure",
+    Docker = "docker",
+}

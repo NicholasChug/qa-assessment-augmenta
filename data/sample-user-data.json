@@ -40,23 +40,5 @@
         "https://example.com/project-theta",
         "https://example.com/project-iota",
         "https://example.com/project-kappa"
-    ],
-    "skillTitles": [
-        "Programming Languages",
-        "Frontend Development",
-        "Backend Development",
-        "Mobile App Development",
-        "AI/ML",
-        "Database",
-        "Data Visualization",
-        "Devops",
-        "Backed as a Service(BaaS)",
-        "Framework",
-        "Testing",
-        "Software",
-        "Static Site Generators",
-        "Game Engines",
-        "Automation",
-        "Other"
     ]
 }
