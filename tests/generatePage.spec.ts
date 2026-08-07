@@ -24,15 +24,21 @@ test('Navigate to webpage and fill select input fields', async ({ page }) => {
     await generatePage.collaborationLinkInputField.fill('https://github.com/collaboration-project');
 
     // Select skills from predefined Skill list
-    // TODO Fix skill selection, checkboxes are not being selected properly
-    // await generatePage.selectSkills([Skill.Javascript, Skill.Python, Skill.VueJS]);
-    // await expect(page.locator(`#${Skill.Javascript}`)).toBeChecked();
-    // await expect(page.locator(`#${Skill.Python}`)).toBeChecked();
-    // await expect(page.locator(`#${Skill.VueJS}`)).toBeChecked();
+    const selectedSkills = [Skill.Javascript, Skill.Python, Skill.VueJS, Skill.Angular, Skill.AWS, Skill.Azure];
+    await generatePage.selectSkills(selectedSkills);
+
+    for (const skill of selectedSkills) {
+        await expect(page.locator(`#${skill}`)).toBeChecked();
+    }
 
     // Fill social media input fields
-    await generatePage.fillSocial(SocialPlatform.Twitter, '@johndoe');
-    await generatePage.fillSocial(SocialPlatform.GitHub, 'nicholaschug');
+    await generatePage.fillSocials([{
+        platform: SocialPlatform.Twitter,
+        value: '@johndoe'
+    }, {
+        platform: SocialPlatform.GitHub,
+        value: 'nicholaschug'
+    }]);
     await expect(page.locator(`#${SocialPlatform.Twitter}`)).toHaveValue('@johndoe');
     await expect(page.locator(`#${SocialPlatform.GitHub}`)).toHaveValue('nicholaschug');
 
@@ -66,9 +72,43 @@ test('Navigate to webpage and fill select input fields', async ({ page }) => {
     // Assert previously entered subtitle is present in the generated text content
     await expect(generatedText).toContain('Your Friendly Neighbourhood Developer');
     // Assert one of previously checked skills is present in the generated text content
+    // TODO Fix skill check in <p> plain text below
     // await expect(generatedHTML).toMatch(/javascript/i);
 
 });
 
 test('Capture and compare GitHub Star count on hosted webpage with GitHub API', async ({ page }) => {
+    const generatePage = new GeneratePage(page);
+
+    // Assert that webpage loads correctly and has the expected title
+    await generatePage.goTo('https://rahuldkjain.github.io/gh-profile-readme-generator/');
+    await expect(generatePage.page).toHaveTitle("GitHub Profile Readme Generator | GitHub Profile Readme Generator");
+
+    // Capture the GitHub Star count from the hosted webpage
+    const hostedStarCountText = await generatePage.hostedStarCount.nth(0).textContent();
+    const hostedStarCount = parseInt(hostedStarCountText?.replace(',', '') || '0', 10);
+
+    // 1st comparison method: Fetch the GitHub Star count from the GitHub API
+    const githubStarCountAPI = await generatePage.retrieveGithubAPIStarCount('https://api.github.com/repos/rahuldkjain/github-profile-readme-generator');
+    // Compare the two star counts
+    const isHostedStarCountEqual = await generatePage.compareStarCount(hostedStarCount, githubStarCountAPI);
+    expect(isHostedStarCountEqual).toBe(true);
+
+    // 2nd comparison method: Fetch the GitHub Star count from the GitHub repository page
+    // const githubStarCountWebpage = await generatePage.retrieveGithubWebpageStarCount('https://github.com/rahuldkjain/github-profile-readme-generator');
+
+    // Compare the two star counts
+    // const isWebpageStarCountEqual = await generatePage.compareStarCount(hostedStarCount, githubStarCountWebpage);
+    // console.log(`Hosted Star Count: ${hostedStarCount}, GitHub Webpage Star Count: ${githubStarCountWebpage}`);
+    // expect(isWebpageStarCountEqual).toBe(true);
+
+});
+
+test('Upload supplied JSON file and verify that the generated README matches the expected output', async ({ page }) => {
+    const generatePage = new GeneratePage(page);
+
+    // Assert that webpage loads correctly and has the expected title
+    await generatePage.goTo('https://rahuldkjain.github.io/gh-profile-readme-generator/');
+    await expect(generatePage.page).toHaveTitle("GitHub Profile Readme Generator | GitHub Profile Readme Generator");
+
 });
