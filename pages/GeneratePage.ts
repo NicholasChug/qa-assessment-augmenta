@@ -18,7 +18,7 @@ export class GeneratePage {
     readonly generateREADMEButton: Locator;
     readonly markdownBox: Locator;
     readonly hostedStarCount: Locator;
-    readonly webpageStarCount: Locator;
+    // readonly webpageStarCount: Locator;
     readonly uploadJSONButton: Locator;
 
 
