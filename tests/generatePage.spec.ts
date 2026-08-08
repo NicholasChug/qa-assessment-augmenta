@@ -95,12 +95,10 @@ test('Capture and compare GitHub Star count on hosted webpage with GitHub API', 
     expect(isHostedStarCountEqual).toBe(true);
 
     // 2nd comparison method: Fetch the GitHub Star count from the GitHub repository page
-    // const githubStarCountWebpage = await generatePage.retrieveGithubWebpageStarCount('https://github.com/rahuldkjain/github-profile-readme-generator');
-
+    const githubStarCountWebpage = await generatePage.retrieveGithubWebpageStarCount('https://github.com/rahuldkjain/github-profile-readme-generator');
     // Compare the two star counts
-    // const isWebpageStarCountEqual = await generatePage.compareStarCount(hostedStarCount, githubStarCountWebpage);
-    // console.log(`Hosted Star Count: ${hostedStarCount}, GitHub Webpage Star Count: ${githubStarCountWebpage}`);
-    // expect(isWebpageStarCountEqual).toBe(true);
+    const isWebpageStarCountEqual = await generatePage.compareStarCount(hostedStarCount, githubStarCountWebpage);
+    expect(isWebpageStarCountEqual).toBe(true);
 
 });
 
@@ -110,5 +108,17 @@ test('Upload supplied JSON file and verify that the generated README matches the
     // Assert that webpage loads correctly and has the expected title
     await generatePage.goTo('https://rahuldkjain.github.io/gh-profile-readme-generator/');
     await expect(generatePage.page).toHaveTitle("GitHub Profile Readme Generator | GitHub Profile Readme Generator");
+
+    // Upload the supplied JSON file
+    const jsonFilePath = 'data/data.json';
+    await generatePage.uploadJSONFile(jsonFilePath);
+
+    // Restore the page to ensure that the uploaded JSON data is reflected in the input fields
+    await generatePage.restorePage();
+
+    // Check for modified fields post page restoration
+    await expect(generatePage.currentWorkProjectInputField).not.toBe('');
+    await expect(generatePage.currentWorkProjectInputField).toHaveValue('project name');
+    await expect(generatePage.funFactTitleField).toHaveValue(/Modified Facts/i);
 
 });
