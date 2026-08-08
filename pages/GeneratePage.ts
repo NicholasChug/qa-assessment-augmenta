@@ -1,4 +1,4 @@
-import { Locator, Page, expect } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 import { SocialPlatform } from '../helpers/Social';
 import { Skill } from '../helpers/Skills';
 
@@ -12,14 +12,16 @@ export class GeneratePage {
     readonly currentWorkProjectLinkInputField: Locator;
     readonly collaborationInputField: Locator;
     readonly collaborationLinkInputField: Locator;
+    readonly funFactTitleField: Locator;
     readonly topSkillsCheckbox: Locator;
     readonly topSkillsEditButton: Locator;
     readonly topSkillsTitleColourButton: Locator;
     readonly generateREADMEButton: Locator;
     readonly markdownBox: Locator;
     readonly hostedStarCount: Locator;
-    // readonly webpageStarCount: Locator;
-    readonly uploadJSONButton: Locator;
+    readonly webpageStarCount: Locator;
+    readonly uploadJSONInput: Locator;
+    readonly restorePageButton: Locator;
 
 
     constructor(page: Page) {
@@ -32,14 +34,17 @@ export class GeneratePage {
         this.currentWorkProjectLinkInputField = page.locator('#currentWork-link');
         this.collaborationInputField = page.locator('#collaborateOn');
         this.collaborationLinkInputField = page.locator('#collaborateOn-link');
+        this.funFactTitleField = page.locator('#funFact-prefix');
         this.topSkillsCheckbox = page.locator('#top-languages');
         this.topSkillsEditButton = page.locator('#top-languages-open-btn');
         this.topSkillsTitleColourButton = page.locator('#top-lang-title-color');
         this.generateREADMEButton = page.getByRole('button', { name: 'Generate README' });
         this.markdownBox = page.locator('#markdown-box');
         this.hostedStarCount = page.locator('span.github-count');
-        // this.webpageStarCount = page.locator('a[href*="/rahuldkjain/github-profile-readme-generator"], button:has-text("Star")').filter({ hasText: 'Star' }).locator('span').filter({ hasText: /\d/ }).first();
-        this.uploadJSONButton = page.getByRole('button', { name: 'Upload json file' });
+        this.webpageStarCount = this.page.locator('#repo-stars-counter-star');
+        // Adding additional specificty here to ensure resiliency for upload button
+        this.uploadJSONInput = page.getByRole('button', { name: 'Upload json file' }).locator('xpath=preceding-sibling::input[@type="file"]');
+        this.restorePageButton = page.getByRole('button', { name: 'Restore' });
     }
 
     async goTo(url: string) {
@@ -73,29 +78,25 @@ export class GeneratePage {
         return starCount;
     }
 
-    // async retrieveGithubWebpageStarCount(url: string) {
-    //     await this.goTo(url);
+    async retrieveGithubWebpageStarCount(url: string): Promise<number> {
+        await this.goTo(url);
+        await this.page.waitForLoadState('domcontentloaded');
 
-    //     const visibleText = await this.page.locator('body').innerText();
-    //     const starMatch = visibleText.match(/Star\s+([0-9,.]+k?)/i);
-
-    //     if (!starMatch) {
-    //         throw new Error('Unable to locate the GitHub star count on the repository page');
-    //     }
-
-    //     const starCountText = starMatch[1].replace(/,/g, '');
-    //     const starCount = parseFloat(starCountText?.replace('k', '')) * (starCountText.includes('k') ? 1 : 1);
-    //     console.log(`GitHub Star count from webpage: ${starCount}`);
-    //     return starCount;
-    // }
+        const exactCount = await this.webpageStarCount.getAttribute('title');
+        return parseInt((exactCount || '0').replace(/,/g, ''), 10);
+    }
 
     async compareStarCount(hostedCount: number, githubCount: number): Promise<boolean> {
         return hostedCount === githubCount;
     }
 
     async uploadJSONFile(filePath: string) {
-        const fileInput = this.page.locator('input[type="file"]');
+        const fileInput = this.uploadJSONInput;
         await fileInput.setInputFiles(filePath);
+    }
+
+    async restorePage() {
+        await this.restorePageButton.click();
     }
 
 }
