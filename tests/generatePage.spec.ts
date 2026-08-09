@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { GeneratePage } from '../pages/GeneratePage';
+import from '../data/data.json';
 import { Skill } from '../helpers/Skills';
 import { SocialPlatform } from '../helpers/Social';
 
@@ -72,8 +73,8 @@ test('Navigate to webpage and fill select input fields', async ({ page }) => {
     // Assert previously entered subtitle is present in the generated text content
     await expect(generatedText).toContain('Your Friendly Neighbourhood Developer');
     // Assert one of previously checked skills is present in the generated text content
-    // TODO Fix skill check in <p> plain text below
-    // await expect(generatedHTML).toMatch(/javascript/i);
+    // The found <p> tag is escaped plain text, will need a broad check for the skill
+    expect(generatedHTML).toMatch(/javascript/i);
 
 });
 
