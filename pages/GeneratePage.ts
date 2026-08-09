@@ -1,11 +1,16 @@
-import { Locator, Page } from '@playwright/test';
+import { Locator, Page, expect } from '@playwright/test';
 import { SocialPlatform } from '../helpers/Social';
 import { Skill } from '../helpers/Skills';
 
+type ProfileDetails = {
+    title: string;
+    subtitle: string;
+    currentWork: { name: string; url: string };
+    collaboration: { name: string; url: string };
+};
+
 export class GeneratePage {
     readonly page: Page;
-    readonly generateButton: Locator;
-    readonly generatedText: Locator;
     readonly titleInputField: Locator;
     readonly subtitleInputField: Locator;
     readonly currentWorkProjectInputField: Locator;
@@ -26,8 +31,6 @@ export class GeneratePage {
 
     constructor(page: Page) {
         this.page = page;
-        this.generateButton = page.locator('button#generate');
-        this.generatedText = page.locator('div#generated-text');
         this.titleInputField = page.locator('#title-name');
         this.subtitleInputField = page.locator('#subtitle');
         this.currentWorkProjectInputField = page.locator('#currentWork');
@@ -47,8 +50,17 @@ export class GeneratePage {
         this.restorePageButton = page.getByRole('button', { name: 'Restore' });
     }
 
-    async goTo(url: string) {
+    async goTo(url = '.') {
         await this.page.goto(url);
+    }
+
+    async fillProfile(details: ProfileDetails) {
+        await this.titleInputField.fill(details.title);
+        await this.subtitleInputField.fill(details.subtitle);
+        await this.currentWorkProjectInputField.fill(details.currentWork.name);
+        await this.currentWorkProjectLinkInputField.fill(details.currentWork.url);
+        await this.collaborationInputField.fill(details.collaboration.name);
+        await this.collaborationLinkInputField.fill(details.collaboration.url);
     }
 
     async selectSkill(skill: Skill) {
@@ -67,12 +79,19 @@ export class GeneratePage {
         }
     }
 
-    async changeColour(colour: string, targetField: Locator) {
-        await targetField.fill(colour);
+    async configureTopLanguages(titleColor: string) {
+        await this.topSkillsCheckbox.check({ force: true });
+        await this.topSkillsEditButton.click();
+        await this.topSkillsTitleColourButton.fill(titleColor);
+    }
+
+    async generateReadme() {
+        await this.generateREADMEButton.click();
     }
 
     async retrieveGithubAPIStarCount(url: string): Promise<number> {
         const response = await this.page.request.get(url);
+        expect(response.ok()).toBe(true);
         const data = await response.json();
         const starCount = data.stargazers_count;
         return starCount;
@@ -84,10 +103,6 @@ export class GeneratePage {
 
         const exactCount = await this.webpageStarCount.getAttribute('title');
         return parseInt((exactCount || '0').replace(/,/g, ''), 10);
-    }
-
-    async compareStarCount(hostedCount: number, githubCount: number): Promise<boolean> {
-        return hostedCount === githubCount;
     }
 
     async uploadJSONFile(filePath: string) {
