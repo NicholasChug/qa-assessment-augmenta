@@ -70,7 +70,7 @@ test('Capture and compare GitHub Star count on hosted webpage with GitHub API', 
 
 });
 
-test('Upload supplied JSON file and verify that the generated README matches the expected output', async () => {
+test('Upload supplied JSON file and verify that restored fields match expectations', async () => {
     // Upload the supplied JSON file
     const jsonFilePath = 'data/data.json';
     await generatePage.uploadJSONFile(jsonFilePath);
