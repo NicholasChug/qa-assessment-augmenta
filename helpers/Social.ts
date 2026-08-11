@@ -5,5 +5,4 @@ export enum SocialPlatform {
     Facebook = "facebook",
     Instagram = "instagram",
     YouTube = "youtube",
-    TikTok = "tiktok",
 }
